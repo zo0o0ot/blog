@@ -1,8 +1,64 @@
 # How to Create a New Draft Charts Post
 
-This guide explains how to create a new NFL Draft prospects chart post using the draft-charts archetype.
+This guide explains how to create a new NFL Draft prospects chart post. There are two methods: an automated script (recommended) and a manual process.
 
-## Prerequisites
+## Method 1: Automated Script (Recommended)
+
+The easiest way to create a new draft post is using the `create-draft-post.sh` script.
+
+### Prerequisites
+
+You need two CSV files with your draft data, named with today's date:
+
+1. **YYYY-MM-DD-ranks.csv** - Individual player rankings
+   - Format: `Rank,Overall,Player,School,Position,Date,,,State,Conference,Points`
+   - Example: `1,1,Rueben Bain,Miami (FL),EDGE,2025-11-23,,,Florida,ACC,35`
+
+2. **YYYY-MM-DD-top-schools.csv** - School aggregated data
+   - Format: `School,Conference,ProjectedPoints,NumberOfProspects`
+   - Example: `Ohio State,Big Ten,230,29`
+
+### Steps
+
+1. **Prepare your CSV files** with the date in the filename (e.g., `2025-12-10-ranks.csv` and `2025-12-10-top-schools.csv`)
+
+2. **Copy the CSV files to the blog root directory**:
+   ```bash
+   cp /path/to/2025-12-10-ranks.csv .
+   cp /path/to/2025-12-10-top-schools.csv .
+   ```
+
+3. **Run the script**:
+   ```bash
+   ./create-draft-post.sh 2026 "2026 Draft Prospects"
+   ```
+
+   Arguments:
+   - First argument: Draft year (e.g., `2026`)
+   - Second argument: Draft name (e.g., `"2026 Draft Prospects"`)
+
+4. **The script automatically**:
+   - Extracts the date from your CSV filenames
+   - Creates the `static/data/YYYY-MM-DD/` directory
+   - Moves the CSV files to the data directory
+   - Creates a new numbered post (e.g., `nfl-draft-prospects-2026-04.md`)
+   - Generates all chart shortcodes with correct paths
+   - Fills in the title, date, and methodology section
+
+5. **Preview your post**:
+   ```bash
+   hugodev
+   ```
+
+That's it! The post is ready to go.
+
+---
+
+## Method 2: Manual Process (Alternative)
+
+If you prefer to create posts manually or need more control, follow these steps.
+
+### Prerequisites
 
 You need two CSV files with your draft data:
 1. **ranks.csv** - Individual player rankings (without headers)
@@ -166,6 +222,22 @@ blog/
 ```
 
 ## Quick Reference Commands
+
+### Using the Script (Recommended)
+
+```bash
+# 1. Copy CSV files to blog root (files must be named YYYY-MM-DD-ranks.csv and YYYY-MM-DD-top-schools.csv)
+cp /path/to/2025-12-10-ranks.csv .
+cp /path/to/2025-12-10-top-schools.csv .
+
+# 2. Run the script
+./create-draft-post.sh 2026 "2026 Draft Prospects"
+
+# 3. Preview
+hugodev
+```
+
+### Manual Method
 
 ```bash
 # Create data directory
