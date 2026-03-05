@@ -1,0 +1,52 @@
+{{- $csv := .Get "csv" -}}
+{{- $title := .Get "title" | default "" -}}
+{{- $xField := .Get "x" -}}
+{{- $yField := .Get "y" -}}
+{{- $annotationField := .Get "annotation" | default "" -}}
+{{- $annotationLabel := .Get "annotationLabel" | default "" -}}
+{{- $width := .Get "width" | default "800" -}}
+{{- $height := .Get "height" | default "600" -}}
+{{- $id := printf "plot-%d" (now.UnixNano) -}}
+
+<div id="{{ $id }}"></div>
+
+<script type="module">
+  import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+  import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+  const data = await d3.csv("{{ $csv }}", d3.autoType);
+
+  // Sort by x value descending
+  data.sort((a, b) => b["{{ $xField }}"] - a["{{ $xField }}"]);
+
+  const plot = Plot.plot({
+    {{ if $title }}title: "{{ $title }}",{{ end }}
+    width: {{ $width }},
+    height: {{ $height }},
+    marginLeft: 140,
+    marginRight: 80,
+    y: { label: null },
+    x: { label: "{{ $xField }}" },
+    marks: [
+      Plot.barX(data, {
+        y: "{{ $yField }}",
+        x: "{{ $xField }}",
+        fill: "steelblue",
+        sort: { y: "-x" },
+        tip: true
+      }),
+      {{ if $annotationField }}
+      Plot.text(data, {
+        y: "{{ $yField }}",
+        x: "{{ $xField }}",
+        text: d => `{{ $annotationLabel }}${d["{{ $annotationField }}"]}`,
+        dx: 5,
+        textAnchor: "start",
+        fontSize: 11,
+        fill: "#333"
+      })
+      {{ end }}
+    ]
+  });
+  document.querySelector("#{{ $id }}").append(plot);
+</script>

@@ -1,0 +1,64 @@
+{{- $csv := .Get "csv" -}}
+{{- $title := .Get "title" | default "" -}}
+{{- $yField := .Get "y" -}}
+{{- $field1 := .Get "field1" -}}
+{{- $label1 := .Get "label1" | default $field1 -}}
+{{- $field2 := .Get "field2" -}}
+{{- $label2 := .Get "label2" | default $field2 -}}
+{{- $width := .Get "width" | default "800" -}}
+{{- $height := .Get "height" | default "600" -}}
+{{- $id := printf "plot-%d" (now.UnixNano) -}}
+
+<div id="{{ $id }}"></div>
+
+<script type="module">
+  import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+  import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+  const rawData = await d3.csv("{{ $csv }}", d3.autoType);
+
+  // Sort by field1 descending
+  rawData.sort((a, b) => b["{{ $field1 }}"] - a["{{ $field1 }}"]);
+
+  const plot = Plot.plot({
+    {{ if $title }}title: "{{ $title }}",{{ end }}
+    width: {{ $width }},
+    height: {{ $height }},
+    marginLeft: 160,
+    marginRight: 20,
+    x: { label: null },
+    y: {
+      label: null,
+      domain: rawData.map(d => d["{{ $yField }}"])
+    },
+    color: {
+      legend: true,
+      domain: ["{{ $label1 }}", "{{ $label2 }}"],
+      range: ["steelblue", "#e69f00"]
+    },
+    marks: [
+      // First bar (field1) - positioned above center
+      Plot.barX(rawData, {
+        y: d => d["{{ $yField }}"],
+        x: "{{ $field1 }}",
+        fill: "steelblue",
+        dy: -8,
+        insetTop: 4,
+        insetBottom: 4,
+        title: d => `${d["{{ $yField }}"]}\n{{ $label1 }}: ${d["{{ $field1 }}"]}`,
+      }),
+      // Second bar (field2) - positioned below center
+      Plot.barX(rawData, {
+        y: d => d["{{ $yField }}"],
+        x: "{{ $field2 }}",
+        fill: "#e69f00",
+        dy: 8,
+        insetTop: 4,
+        insetBottom: 4,
+        title: d => `${d["{{ $yField }}"]}\n{{ $label2 }}: ${d["{{ $field2 }}"]}`,
+      }),
+      Plot.ruleX([0])
+    ]
+  });
+  document.querySelector("#{{ $id }}").append(plot);
+</script>
